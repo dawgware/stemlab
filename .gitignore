@@ -1,0 +1,11 @@
+/**/*.pyc
+/**/*.idea
+/**/*.log*
+/**/build
+/**/dist
+/**/*.egg-info
+/**/*.swp
+/**/*.txt
+/**/.DS_Store
+/**/*.db
+
