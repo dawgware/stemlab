@@ -58,7 +58,7 @@ class SensorClient(object):
         self.username = None
         self.password = None
         self.device_location = None
-
+        self.simulate_sensor = False
         self.sensors = []
         if kwargs is not None:
             if 'api_port' in kwargs:
@@ -75,6 +75,10 @@ class SensorClient(object):
 
             if 'password' in kwargs:
                 self.password = kwargs['password']
+
+            if 'sim_sensor' in kwargs:
+                self.simulate_sensor = True
+
 
     def _load_persistent_data(self):
         shelve_db = shelve.open(str(self._db_filename))
@@ -149,6 +153,11 @@ class SensorClient(object):
         self._get_device_links()
 
     def start_client(self):
+        if self.simulate_sensor is True:
+            from stemlab_client.sensors.dht22_sensor_simulator import DHT22Sensor
+        else:
+            from stemlab_client.sensors.dht22_sensor import DHT22Sensor
+
         try:
             exit_monitor = GracefulExit()
             self._load_persistent_data()
@@ -164,16 +173,13 @@ class SensorClient(object):
             next_reading = time.time()
 
             while True:
-                print "Polling Sensor"
                 readings = sensor.poll()
                 for reading in readings:
                     template = self._device_settings.measurement_templates[reading.measurement_type.name]
                     post_data = generate_measurement_params(template, reading)
-                    print post_data
                     post_future = executor.submit(post, post_data['href'], post_data['params'])
                     post_future.add_done_callback(callback_reading_post)
                 next_reading += self.poll_interval
-                print "Wait interval ", next_reading
                 time.sleep(next_reading - time.time())
                 if exit_monitor.exit_now is True:
                     break
@@ -224,6 +230,9 @@ Initializes the sensor device, registers with remote server and provides data pe
     argparser.add_argument('-p','--password',
                            help='Password for API authentication if authentication is supported. Required if username set.',
                            required=False)
+    argparser.add_argument('--sim_sensor', action='store_true',
+                           help='Pass this parameter to utilize a sensor simulator instead of actual sensor',
+                           required=False)
     args = argparser.parse_args()
 
     api_host = args.api_host
@@ -240,9 +249,14 @@ Initializes the sensor device, registers with remote server and provides data pe
 
     if args.username:
         kwargs['username'] = args.username
+
     if args.password:
         kwargs['password'] = args.password
     else:
         if args.username:
             raise ValueError("Password required when passing Username")
+
+    if args.sim_sensor:
+        kwargs['sim_sensor'] = True
+
     main(api_host, poll_interval, **kwargs)

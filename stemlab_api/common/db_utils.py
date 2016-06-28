@@ -83,7 +83,6 @@ class DBUtils(object):
                         'value': log_id,
                         'operator': '='}]
             result = self.get_reading(filters, measurement)
-            print "RESULTS: ", result
         return result
 
     def get_device_readings(self, device_id, measurement=TEMPERATURE):
@@ -140,7 +139,6 @@ class DBUtils(object):
         if hasitems(conditions):
             select += " WHERE " + " and ".join(conditions) + ";"
 
-        print "SELECT: ", select
         result = self.client.query(query=select)
         return result
 

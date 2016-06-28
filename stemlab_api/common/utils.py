@@ -27,7 +27,6 @@ def append_to_url(root_url, url):
 def create_url_with_params(base_url, parameters):
     params = None
     if isinstance(parameters, dict):
-        print "DICT: ", len(parameters), parameters
         if len(parameters) > 1:
             return "{url}?{params}".format(url=base_url, params=urllib.urlencode(parameters))
         else:
