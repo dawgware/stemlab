@@ -198,7 +198,8 @@ def main(api_host,
     client.start_client()
     print "Shutting down"
 
-if __name__ == "__main__":
+
+def launch():
     argparser = argparse.ArgumentParser(
             description="""
 Sensor client module that provides command and control for sensor read and report functions.
@@ -260,3 +261,6 @@ Initializes the sensor device, registers with remote server and provides data pe
         kwargs['sim_sensor'] = True
 
     main(api_host, poll_interval, **kwargs)
+
+if __name__ == "__main__":
+    launch()

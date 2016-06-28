@@ -9,6 +9,11 @@ setup(
     author='Carl Wilen',
     author_email='dawgwaredev@gmail.com',
     description='An example REST API client for polling sensor data and reporting back to central server.',
+    entry_points={
+        'console_scripts': [
+            'sensor_client = stemlab_client.sensor_client:launch'
+        ],
+    },
     install_requires=['arrow',
                       'requests',
                       'futures',
