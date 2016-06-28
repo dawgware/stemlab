@@ -5,6 +5,9 @@ from path import Path
 from stemlab_api.models.models import Devices, Readings
 import traceback
 
+__version__ = 1.0
+__author__ = "dawgwaredev@gmail.com"
+
 
 def create_app():
     # app = Flask(__name__)
@@ -33,21 +36,23 @@ def setup_databases():
         with app.app_context():
             db.create_all()
             import uuid
-            device = Devices(device_id=str(uuid.uuid4()), device_name='raspi001', location='LWR05.1.219',
-                             temperature_sensor=True,
-                             humidity_sensor=True,
-                             uptime=1)
-            db.session.add(device)
-            device = Devices(device_id=str(uuid.uuid4()), device_name='raspi002', location='LWR05.1.210',
-                             temperature_sensor=True,
-                             humidity_sensor=True,
-                             uptime=1)
-            db.session.add(device)
-            db.session.commit()
+            # device = Devices(device_id=str(uuid.uuid4()), device_name='raspi001', location='LWR05.1.219',
+            #                  temperature_sensor=True,
+            #                  humidity_sensor=True,
+            #                  uptime=1)
+            # db.session.add(device)
+            # device = Devices(device_id=str(uuid.uuid4()), device_name='raspi002', location='LWR05.1.210',
+            #                  temperature_sensor=True,
+            #                  humidity_sensor=True,
+            #                  uptime=1)
+            # db.session.add(device)
+            # db.session.commit()
     ##
     # Init the InfluxDB connection
     ##
     db_client.db_connect(host='localhost', database='device_readings')
+    # db_client.db_connect(host='localhost')
+    # db_client.create_database('device_readings')
 
 
 if __name__ == '__main__':

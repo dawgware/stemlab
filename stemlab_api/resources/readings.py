@@ -16,16 +16,17 @@ from stemlab_api.common.error_handlers import not_found, conflict, internal_erro
 from stemlab_api.common.error_handlers import InvalidRequestException, NotFoundError, ConflictError
 from stemlab_api.common.db_utils import TEMPERATURE, HUMIDITY
 from stemlab_api import app
-from stemlab_api.common.utils import create_url_with_params, append_to_url
+from stemlab_api.common.utils import query_timestamp, convert_to_timestamp
 from stemlab_api.database import ma
 from webargs.flaskparser import use_args, use_kwargs, parser
 from flask_classful import FlaskView, route
 from flask import request, url_for
-# from flask_marshmallow import Schema
 from collections import OrderedDict
 from path import Path
 import json
 import decimal
+
+__author__='dawaredev@gmail.com'
 
 readings = OrderedDict()
 input_file = Path.joinpath(app.root_path, '.readings.log')
@@ -40,8 +41,10 @@ class TemperatureReadingsSchema(ma.mallow.Schema):
     log_id = fields.UUID()
     device_id = fields.UUID()
     temperature = fields.Decimal(attribute='value')
-    # timestamp = fields.DateTime(format='iso', attribute='time')
     timestamp = fields.Method('get_time')
+    device_name = fields.String()
+    location = fields.String()
+    units = fields.String()
     url = ma.mallow.URLFor('TemperatureReadingsView:get', log_id='<log_id>', _external=True)
 
     def get_time(self, obj):
@@ -95,6 +98,7 @@ class TemperatureReadingsView(FlaskView):
         except NotFoundError as nfe:
             return not_found(nfe.message), 404
         except Exception as e:
+            print traceback.format_exc()
             return internal_error(), 500
 
     def template(self, device_id):
@@ -116,6 +120,9 @@ class HumidityReadingsSchema(ma.mallow.Schema):
     device_id = fields.UUID()
     humidity = fields.Decimal(attribute='value')
     timestamp = fields.Method('get_time')
+    device_name = fields.String()
+    location = fields.String()
+    units = fields.String()
     url = ma.mallow.URLFor('HumidityReadingsView:get', log_id='<log_id>', _external=True)
 
     def get_time(self, obj):
@@ -180,9 +187,11 @@ class HumidityReadingsView(FlaskView):
         except Exception as e:
             return internal_error, 500
 
+
 def post_reading(args, measurement):
     device_id = None
-    timestamp = str(args['timestamp'])
+    timestamp = convert_to_timestamp(str(args['timestamp']))
+    device = None
     if 'device_id' in args:
         device = Devices.query.filter_by(device_id=args['device_id']).first()
         if device is not None:
@@ -190,7 +199,8 @@ def post_reading(args, measurement):
         else:
             raise NotFoundError('No device found for device id {id}. Please register this device'
                                 .format(id=args['device_id']))
-
+    location = str(device.location)
+    device_name = str(device.device_name)
     log_id = str(uuid.uuid4())
     related_measurement = HUMIDITY
     if measurement == HUMIDITY:
@@ -212,11 +222,17 @@ def post_reading(args, measurement):
                               value=args['measurement'],
                               device_id=device_id,
                               timestamp=timestamp,
-                              measurement=measurement)
+                              measurement=measurement,
+                              device_name=device_name,
+                              location=location,
+                              units=args['units'])
 
-    if not reading_exists(device_id, timestamp, measurement):
-        save_reading(reading, measurement)
-
+    existing_log_id = reading_exists(device_id, timestamp, measurement)
+    if existing_log_id is None:
+        if not save_reading(reading, measurement):
+            raise Exception("Unable to save reading. " + reading.db_record())
+    else:
+        return existing_log_id
     return log_id
 
 
@@ -263,15 +279,24 @@ def generate_get_response(log_id, measurement, schema):
 def save_reading(reading, measurement):
     if reading is not None:
         record = reading.db_record()
-        db_client.insert_reading(record)
+        return db_client.insert_reading(record)
+    else:
+        raise ValueError("Reading instance cannot be None")
 
 
 def reading_exists(device_id, timestamp, measurement=None):
-    exists = False
+    ret_log_id = None
     result = get_reading_by_device_and_time(device_id, timestamp, measurement)
     if result is not None and len(result) > 0:
-        exists = True
-    return exists
+        points = list(result.get_points())
+        if len(points) == 1:
+            single_reading = points[0]
+            if single_reading is not None:
+                ret_log_id = single_reading['log_id']
+        else:
+            pass
+            # TODO: Log that more than one reading exists for same device and timestamp
+    return ret_log_id
 
 
 def get_reading_by_device_and_time(device_id, timestamp, measurement=None):

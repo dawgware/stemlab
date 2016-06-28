@@ -17,10 +17,10 @@ class MeasurementType(object):
     _name = ''
     _unitsofmeasure = ''
 
-    def __init__(self, unit):
-        if unit is None:
-            raise ValueError("A unit needs to be specified for the type")
-        self._unit = unit
+    def __init__(self, units):
+        if units is None:
+            raise ValueError("A units needs to be specified for the type")
+        self._units = units
 
     @property
     def description(self):
@@ -47,18 +47,19 @@ class MeasurementType(object):
         return self._unitsofmeasure
 
     @property
-    def unit(self):
+    def units(self):
         """
         Unit of measurment for this type. Defined and specific to the type itself.
-        :return: The type's unit
+        :return: The type's units
         """
-        return self._unit
+        return self._units
 
-    @unit.setter
-    def unit(self, value):
+    @units.setter
+    def units(self, value):
         if value is None:
-            raise ValueError("A unit value was not specified")
-        self._unit = value
+            raise ValueError("A units value was not specified")
+        self._units = value
+
 
 class TemperatureMeasurementType(MeasurementType):
 
@@ -67,11 +68,11 @@ class TemperatureMeasurementType(MeasurementType):
     _name = 'temperature'
     _unitsofmeasure = [CELSIUS, FAHRENHEIT, KELVIN]
 
-    def __init__(self, unit=CELSIUS, scale=None):
-        if unit not in self._unitsofmeasure:
-            raise ValueError("The unit {u} is not a valid temperature unit".format(u=unit))
+    def __init__(self, units=CELSIUS, scale=None):
+        if units not in self._unitsofmeasure:
+            raise ValueError("The units {u} is not a valid temperature units".format(u=unit))
 
-        super(TemperatureMeasurementType, self).__init__(unit=unit)
+        super(TemperatureMeasurementType, self).__init__(units=units)
 
     @staticmethod
     def celsius_to_fahrenheit(temperature):
@@ -92,8 +93,8 @@ class HumidityMeasurementType(MeasurementType):
     _name = 'humidity'
     _unitsofmeasure = [PERCENTAGE]
 
-    def __init__(self, unit=PERCENTAGE, scale=None):
-        if unit not in self._unitsofmeasure:
-            raise ValueError("The unit {u} is not a valid humidity unit".format(u=unit))
-        super(HumidityMeasurementType, self).__init__(unit)
+    def __init__(self, units=PERCENTAGE, scale=None):
+        if units not in self._unitsofmeasure:
+            raise ValueError("The units {u} is not a valid humidity units".format(u=units))
+        super(HumidityMeasurementType, self).__init__(units)
 

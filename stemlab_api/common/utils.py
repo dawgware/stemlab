@@ -1,9 +1,22 @@
 import urllib
+import arrow
 
 def hasitems(collection):
     if isinstance(collection, dict) or isinstance(collection, list):
         return collection is not None and len(collection) > 0
     return False
+
+
+def convert_to_timestamp(datetimestr):
+    if datetimestr is not None and isinstance(datetimestr, str):
+        try:
+            return arrow.get(datetimestr).timestamp
+        except Exception as e:
+            raise Exception("Failed to convert datetime string to timestamp ", str(e))
+
+
+def query_timestamp(timestamp):
+    return "{t}s".format(t=str(timestamp))
 
 
 def append_to_url(root_url, url):

@@ -8,6 +8,8 @@ import socket
 from arrow import Arrow
 import arrow
 
+__version__ = 1.0
+__author__ = "dawgwaredev@gmail.com"
 
 class Device(object):
 

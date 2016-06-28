@@ -21,17 +21,20 @@ device_name_args = {
 temperature_reading_args = {
     'device_id': fields.Str(required=True),
     'temperature': fields.Decimal(required=True),
-    'timestamp': fields.String(required=True)
+    'timestamp': fields.String(required=True),
+    'units': fields.String(required=True)
 }
 
 humidity_reading_args = {
     'device_id': fields.Str(required=True),
     'humidity': fields.Decimal(required=True),
-    'timestamp': fields.String(required=True)
+    'timestamp': fields.String(required=True),
+    'units': fields.String(required=True)
 }
 
 reading_args = {
     'device_id': fields.Str(required=True),
     'measurement': fields.Decimal(required=True),
-    'timestamp': fields.String(required=True)
+    'timestamp': fields.String(required=True),
+    'units': fields.String(required=True)
 }

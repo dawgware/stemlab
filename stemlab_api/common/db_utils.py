@@ -1,5 +1,5 @@
 from influxdb import InfluxDBClient
-from stemlab_api.common.utils import hasitems
+from stemlab_api.common.utils import hasitems, query_timestamp
 
 
 client = None
@@ -21,22 +21,27 @@ class DBUtils(object):
         #                         password=password,
         #                         database=database)
         print "CONNECTING TO INFLUXDB"
+        self.client = InfluxDBClient(host=host)
         if database is not None:
-            self.client = InfluxDBClient(host=host,
-                                         database=database)
-        else:
-            self.client = InfluxDBClient(host=host)
+            if not self._database_exists(database):
+                self.create_database(database)
+            # self.client = InfluxDBClient(host=host,
+            #                              database=database)
+        # else:
 
+        self.client.switch_database(database)
         print "CONNECTING"
 
     def db_close(self):
         del self.client
 
     def insert_reading(self, data_record):
+        success = False
         try:
             if self.client is not None:
-                self.client.write_points(points=data_record,
-                                         time_precision="s")
+                success = self.client.write_points(points=data_record,
+                                                   time_precision="s")
+            return success
         except Exception as e:
             raise e
 
@@ -51,6 +56,13 @@ class DBUtils(object):
                         'value': timestamp}]
             result = self.get_reading(filters, measurement)
         return result
+
+    def _database_exists(self, db_name):
+        database_list = self.client.get_list_database()
+        db_names = [db['name'] for db in database_list]
+        if db_name not in db_names:
+            return False
+        return True
 
     def create_database(self, db_name):
         self.client.create_database(db_name, if_not_exists=True)
@@ -109,7 +121,7 @@ class DBUtils(object):
                 use_mask = str_mask if isinstance(val, str) or isinstance(val, unicode) else mask
                 if filter['field'] == 'time':
                     # val = str(val) + "s"
-                    val = str(val)
+                    val = query_timestamp(val)
 
                 conditions.append(use_mask.format(field=field,
                                                   oper=oper,
@@ -118,7 +130,7 @@ class DBUtils(object):
         if hasitems(fields) and isinstance(fields, list):
             select = "SELECT " + ','.join(fields)
         else:
-            select = "SELECT * "
+            select = "SELECT *,value"
 
         if measurement is not None:
             select += " FROM " + measurement
@@ -128,6 +140,7 @@ class DBUtils(object):
         if hasitems(conditions):
             select += " WHERE " + " and ".join(conditions) + ";"
 
+        print "SELECT: ", select
         result = self.client.query(query=select)
         return result
 

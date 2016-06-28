@@ -16,19 +16,18 @@ from stemlab_client.sensors.reading import Reading
 
 class DHT22Sensor(Sensor):
 
-    _measurement_types = {'temperature': TemperatureMeasurementType(),
-                          'humidity': HumidityMeasurementType()}
-
-    def __init__(self, device_id, unit=CELSIUS, gpio_pin=4):
+    def __init__(self, device_id, units=CELSIUS, gpio_pin=4):
 
         super(DHT22Sensor, self).__init__(device_id)
 
-        self.default_unit = unit
+        self._measurement_types = {'temperature': TemperatureMeasurementType(units=units),
+                              'humidity': HumidityMeasurementType()}
+        self.default_units = units
         self.sensor_type = 22
         self.gpio_pin = gpio_pin
-        if unit == FAHRENHEIT:
+        if units == FAHRENHEIT:
             self.fahrenheit = True
-        self._measurement_types['temperature'].unit = self.default_unit
+        self._measurement_types['temperature'].units = self.default_units
 
     def poll(self):
         """
@@ -40,7 +39,7 @@ class DHT22Sensor(Sensor):
             timestamp = arrow.now()
             time.sleep(random.randint(0,5))
             temperature = round(random.uniform(65.4, 95.6), 2)
-            if self.default_unit == CELSIUS:
+            if self.default_units == CELSIUS:
                 temperature = round(TemperatureMeasurementType.fahrenheit_to_celsius(temperature), 2)
             humidity = round(random.uniform(25.3, 84.9), 2)
             readings.append(Reading(device_id=self._device_id,

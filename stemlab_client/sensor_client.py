@@ -22,6 +22,9 @@ from stemlab_client.api_client import get, post
 from stemlab_client.common.utils import generate_measurement_params, hasitems, GracefulExit
 import sys
 
+__version__ = 1.0
+__author__ = "dawgwaredev@gmail.com"
+
 def callback_reading_post(future):
     post_response = future.result()
     print "Reading Response: ", post_response.status_code, post_response.text
@@ -29,6 +32,7 @@ def callback_reading_post(future):
 
 def callback_reading_get(future):
     pass
+
 
 def post_readings(templates, readings):
     if hasitems(templates) and hasitems(readings):
@@ -155,7 +159,7 @@ class SensorClient(object):
                 shelve_db.close()
 
             sensor = DHT22Sensor(self._device_settings.device_id,
-                                 unit=FAHRENHEIT)
+                                 units=FAHRENHEIT)
             executor = ThreadPoolExecutor(4)
             next_reading = time.time()
 
@@ -165,6 +169,7 @@ class SensorClient(object):
                 for reading in readings:
                     template = self._device_settings.measurement_templates[reading.measurement_type.name]
                     post_data = generate_measurement_params(template, reading)
+                    print post_data
                     post_future = executor.submit(post, post_data['href'], post_data['params'])
                     post_future.add_done_callback(callback_reading_post)
                 next_reading += self.poll_interval
@@ -174,6 +179,7 @@ class SensorClient(object):
                     break
 
         except Exception as e:
+            print traceback.format_exc()
             print str(e)
 
 def main(api_host,

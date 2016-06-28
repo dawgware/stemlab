@@ -16,10 +16,13 @@ class Devices(db.Model):
 
 class Readings(object):
 
-    def __init__(self, timestamp, device_id, log_id=None):
+    def __init__(self, timestamp, device_id, units, log_id=None, device_name=None, location=None):
         self._log_id = log_id
         self._timestamp = timestamp
         self._device_id = device_id
+        self._device_name = device_name
+        self._location = location
+        self._units = units
 
 
     @property
@@ -39,17 +42,44 @@ class Readings(object):
         self._device_id = value
 
     @property
+    def device_name(self):
+        return self._device_name
+
+    @device_name.setter
+    def device_name(self, value):
+        self._device_id = value
+
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        self._location = value
+
+    @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, value):
+        self._units = value
+
+    @property
     def timestamp(self):
         return self._timestamp
 
 
 class TemperatureReadings(Readings):
 
-    def __init__(self, timestamp, temperature, device_id, log_id=None):
+    def __init__(self, timestamp, temperature, device_id, units, log_id=None, device_name=None, location=None):
 
         super(TemperatureReadings, self).__init__(log_id=log_id,
-                                                 device_id=device_id,
-                                                 timestamp=timestamp)
+                                                  device_id=device_id,
+                                                  units=units,
+                                                  timestamp=timestamp,
+                                                  device_name=device_name,
+                                                  location=location)
         self._temperature = temperature
 
     @property
@@ -70,6 +100,9 @@ class TemperatureReadings(Readings):
                 "measurement": "temperature",
                 "tags": {
                     "device_id": self.device_id,
+                    "device_name": self.device_name,
+                    "location": self.location,
+                    "units": self.units,
                     "log_id": self.log_id
                 },
                 "time": self.timestamp,
@@ -82,11 +115,14 @@ class TemperatureReadings(Readings):
 
 
 class HumidityReadings(Readings):
-    def __init__(self, timestamp, humidity, device_id, log_id=None):
+    def __init__(self, timestamp, humidity, device_id, units, log_id=None, device_name=None, location=None):
 
         super(HumidityReadings, self).__init__(log_id=log_id,
-                                                 device_id=device_id,
-                                                 timestamp=timestamp)
+                                               device_id=device_id,
+                                               units=units,
+                                               timestamp=timestamp,
+                                               device_name=device_name,
+                                               location=location)
         self._humidity = humidity
 
     @property
@@ -107,7 +143,11 @@ class HumidityReadings(Readings):
                 "measurement": "humidity",
                 "tags": {
                     "device_id": self.device_id,
+                    "device_name": self.device_name,
+                    "location": self.location,
+                    "units": self.units,
                     "log_id": self.log_id
+
                 },
                 "time": self.timestamp,
                 "fields": {
@@ -117,16 +157,23 @@ class HumidityReadings(Readings):
         ]
         return record
 
-def reading_factory(timestamp, device_id, log_id, value, measurement):
+
+def reading_factory(timestamp, device_id, units, device_name, location, log_id, value, measurement):
     if measurement == TEMPERATURE:
         return TemperatureReadings(temperature=value,
                                    timestamp=timestamp,
                                    device_id=device_id,
+                                   device_name=device_name,
+                                   location=location,
+                                   units=units,
                                    log_id=log_id)
     elif measurement == HUMIDITY:
         return HumidityReadings(humidity=value,
                                 timestamp=timestamp,
                                 device_id=device_id,
+                                device_name=device_name,
+                                location=location,
+                                units=units,
                                 log_id=log_id)
     else:
         return None

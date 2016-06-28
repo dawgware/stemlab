@@ -28,8 +28,11 @@ class DBUtilsTestCase(unittest.TestCase):
         devices = []
         for n in range(0, num_devices):
             device = {}
-            device_id='0c89fded-76ea-4890-a8a1-25c25b24{id}'.format(id=hex(random.randint(10000,99999))[2:6])
+            rand_hex = hex(random.randint(10000,99999))[2:6]
+            device_id='0c89fded-76ea-4890-a8a1-25c25b24{id}'.format(id=rand_hex)
             device['device_id'] = device_id
+            device['device_name'] = 'device_{h}'.format(h=rand_hex)
+            device['location'] = 'location_{l}'.format(l=rand_hex)
             devices.append(device)
         for i in range(0,num_cycles):
             timestamp = 0
@@ -44,13 +47,20 @@ class DBUtilsTestCase(unittest.TestCase):
                 temp = round(random.uniform(65.4,95.6),2)
                 humid = round(random.uniform(25.3,84.9),2)
                 temp_reading = TemperatureReadings(temperature=temp,
-                                   timestamp=str(self.current_time.replace(day=self.current_time.day - i)),
-                                   device_id=device['device_id'],
-                                   log_id=log_id)
+                                                   timestamp=str(self.current_time.replace(day=self.current_time.day - i)),
+                                                   device_id=device['device_id'],
+                                                   log_id=log_id,
+                                                   device_name=device['device_name'],
+                                                   location=device['location'],
+                                                   units='Fahrenheit')
                 humid_reading = HumidityReadings(humidity=humid,
-                                              timestamp=str(self.current_time.replace(day=self.current_time.day - i)),
-                                              device_id=device['device_id'],
-                                              log_id=log_id)
+                                                 timestamp=str(self.current_time.replace(day=self.current_time.day - i)),
+                                                 device_id=device['device_id'],
+                                                 log_id=log_id,
+                                                 device_name=device['device_name'],
+                                                 location=device['location'],
+                                                 units='Percentage')
+
                 self.db_client.insert_reading(temp_reading.db_record())
                 self.db_client.insert_reading(humid_reading.db_record())
                 self.test_temp_readings.append(temp_reading)
@@ -74,11 +84,11 @@ class DBUtilsTestCase(unittest.TestCase):
         self.assertEqual(test_device_id, result_device_id,  """
         DBUtilsTestCase::test_get_device_readings:
         Expected '{expected}' got '{returned}' value instead
-        """.format(expected=test_device_id, returned=result_device_id))
+        """.format(expected='Device Id: ' + test_device_id, returned=result_device_id))
         self.assertEqual(test_log_id, result_log_id,  """
         DBUtilsTestCase::test_get_device_readings:
         Expected '{expected}' got '{returned}' value instead
-        """.format(expected=test_log_id, returned=result_log_id))
+        """.format(expected='Log Id: ' + test_log_id, returned=result_log_id))
 
     def test_get_reading_by_device_time(self):
         test_device_id = self.test_temp_readings[0].device_id

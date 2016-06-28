@@ -46,6 +46,10 @@ class Reading(object):
     def timestamp(self):
         return str(arrow.get(self._timestamp).to('local'))
 
+    @property
+    def units(self):
+        return self.measurement_type.units
+
     def get_timestamp_(self):
         return self._timestamp
 

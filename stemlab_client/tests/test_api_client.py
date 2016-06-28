@@ -72,11 +72,11 @@ class Api_ClientTestCase(unittest.TestCase):
     def test_post_temperature_reading(self):
         test_url = self.test_url + "/readings/temperature/"
         templates = {'humidity': {'href':'http://localhost:5000/readings/humidity/',
-                    'param_names': ['timestamp', 'measurement', 'device_id']},
+                    'param_names': ['timestamp', 'measurement', 'device_id', 'units']},
                      'temperature': {'href':'http://localhost:5000/readings/temperature/',
-                     'param_names': ['timestamp', 'measurement', 'device_id']}}
+                     'param_names': ['timestamp', 'measurement', 'device_id', 'units']}}
 
-        test_readings = DHT22Sensor('b7a77117-533b-4c4a-be31-c621cd3c2f25').poll()
+        test_readings = DHT22Sensor('19c99cdb-7acb-4662-82bd-cf78b7e0222e').poll()
         for reading in test_readings:
             post_data = generate_measurement_params(templates[reading.measurement_type.name], reading)
             test_response = post(post_data['href'], data=post_data['params'])

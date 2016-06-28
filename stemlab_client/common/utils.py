@@ -16,6 +16,7 @@ def generate_measurement_params(template, reading):
     post_dict = {}
     params = {}
     post_dict['href'] = template['href']
+    print template
     for param_name in template['param_names']:
         params[param_name] = getattr(reading, param_name)
     post_dict['params'] = params

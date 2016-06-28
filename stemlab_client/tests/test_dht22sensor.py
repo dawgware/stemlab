@@ -8,7 +8,7 @@ class DHT22SensorTestCase(unittest.TestCase):
         sensor = DHT22Sensor()
         test_readings = sensor.poll()
         for reading in test_readings:
-            print reading.measurement_type.unit
+            print reading.measurement_type.units
             print reading.measurement
             print reading.timestamp
 

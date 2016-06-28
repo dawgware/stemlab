@@ -7,6 +7,8 @@
 """
 import requests
 
+__version__ = 1.0
+__author__ = "dawgwaredev@gmail.com"
 
 def get(url, params=None):
     """
