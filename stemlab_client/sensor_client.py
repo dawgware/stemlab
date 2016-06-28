@@ -79,9 +79,13 @@ class SensorClient(object):
             if 'sim_sensor' in kwargs:
                 self.simulate_sensor = True
 
+            self.app_dir = Path('/opt/stemlab')
+            if not self.app_dir.isdir():
+                self.app_dir = Path.getcwd()
+
 
     def _load_persistent_data(self):
-        shelve_db = shelve.open(str(self._db_filename))
+        shelve_db = shelve.open(str(Path.joinpath(self.app_dir, self._db_filename)))
         if self.SETTINGS_KEY in shelve_db:
             self._device_settings = shelve_db[self.SETTINGS_KEY]
 
